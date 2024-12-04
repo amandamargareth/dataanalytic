@@ -72,3 +72,29 @@ else:
     # Tampilkan data gabungan (hanya kolom yang diperlukan)
     st.write("Data Gabungan (Jumlah per Tahun):")
     st.dataframe(summed_data)
+
+    # Import tambahan
+import matplotlib.pyplot as plt
+
+# Plot grafik batang
+st.write("Grafik Perbandingan Jumlah Penduduk Miskin dan Stunting (2019-2022)")
+fig, ax = plt.subplots(figsize=(10, 6))
+x = summed_data['tahun']
+bar_width = 0.4
+
+# Bar data penduduk miskin
+ax.bar(x - bar_width / 2, summed_data['jumlah_penduduk_miskin'], bar_width, label='Penduduk Miskin', color='skyblue')
+
+# Bar data penduduk stunting
+ax.bar(x + bar_width / 2, summed_data['jumlah_balita_stunting'], bar_width, label='Penduduk Stunting', color='pink')
+
+# Menambahkan label dan judul
+ax.set_xlabel('Tahun')
+ax.set_ylabel('Jumlah (dalam ribuan/miliar)')
+ax.set_title('Grafik Perbandingan Penduduk Miskin dan Stunting (2019-2022)')
+ax.set_xticks(x)
+ax.legend()
+
+# Tampilkan grafik di Streamlit
+st.pyplot(fig)
+
