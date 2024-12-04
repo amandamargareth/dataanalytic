@@ -10,7 +10,7 @@ st.write(
         """
 )
 
-file_path = Path('/workspaces/dataanalytic/data/Stunting.csv')   
+file_path = Path('/dataanalytic/data/Stunting.csv')   
 stunting_data = pd.read_csv(file_path)
 
 stunting_by_year = stunting_data.groupby('tahun')['jumlah_balita_stunting'].sum().reset_index()
@@ -43,7 +43,7 @@ st.write(f"- Jumlah balita stunting tersedikit adalah Tahun **{min_stunting['tah
 st.write(f"- Jumlah balita stunting dari 2019 hingga 2022 adalah **{total_stunting:,} orang**.")
 
 st.title("Grafik Jumlah Stunting di Tiap Kota")
-file_path = Path('/workspaces/dataanalytic/data/Stunting.csv') 
+file_path = Path('/dataanalytic/data/Stunting.csv') 
 try:
     # Membaca file CSV
     df = pd.read_csv(file_path, thousands=",")
