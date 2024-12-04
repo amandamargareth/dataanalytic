@@ -71,7 +71,6 @@ else:
 import streamlit as st
 import pandas as pd
 import altair as alt
-from pathlib import Path
 
 # Load CSV File
 uploaded_file = "data/Jumlah_Kemiskinan.csv"  # Nama file
@@ -79,6 +78,9 @@ df = pd.read_csv(uploaded_file)
 
 # Filter columns to display only relevant data
 df_display = df[['nama_kabupaten_kota', 'tahun', 'jumlah_penduduk_miskin']]
+
+# Ensure all rows have data, fill missing with 0 if necessary
+df_display['jumlah_penduduk_miskin'] = df_display['jumlah_penduduk_miskin'].fillna(0)
 
 # Title
 st.title("Grafik Jumlah Kemiskinan tiap Kota/Kabupaten Di Jawa Barat")
@@ -89,7 +91,11 @@ st.dataframe(df_display)
 
 # Altair Bar Chart
 bar_chart = alt.Chart(df_display).mark_bar().encode(
-    x=alt.X('nama_kabupaten_kota:N', title="Nama Kabupaten/Kota", sort='-y'),
+    x=alt.X(
+        'nama_kabupaten_kota:N', 
+        title="Nama Kabupaten/Kota", 
+        sort=alt.EncodingSortField(field="nama_kabupaten_kota", order="ascending")
+    ),
     y=alt.Y('jumlah_penduduk_miskin:Q', title="Jumlah Penduduk Miskin"),
     color=alt.Color('tahun:N', legend=alt.Legend(title="Tahun")),
     tooltip=[
@@ -98,7 +104,7 @@ bar_chart = alt.Chart(df_display).mark_bar().encode(
         alt.Tooltip('jumlah_penduduk_miskin:Q', title="Jumlah Penduduk Miskin", format=",")
     ]
 ).properties(
-    width=800,
+    width=1000,
     height=400,
     title="Grafik Jumlah Kemiskinan per Kota/Kabupaten"
 ).configure_axis(
