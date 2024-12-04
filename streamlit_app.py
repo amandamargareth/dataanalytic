@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-st.title("Analisis Hubungan Antara Kemiskinan dan Stunting di Indonesia")
+st.title("Analisis Hubungan Antara Kemiskinan dan Stunting di Jawa Barat")
 
 st.markdown("""
     <div style="text-align: center;">
