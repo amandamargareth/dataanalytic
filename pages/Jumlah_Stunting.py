@@ -1,60 +1,46 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 from pathlib import Path
 
-st.title("Jumlah Balita Stunting Di Indonesia")
-
-
-# Fungsi untuk membaca data jumlah kemiskinan
-@st.cache_data
-def get_poverty_data():
-    DATA_2 = Path('/workspaces/dataanalytic/data/Stunting.csv')
-    poverty_df = pd.read_csv(DATA_2)
-
-    # Filter data untuk tahun 2019-2022
-    poverty_df = poverty_df[(poverty_df['tahun'] >= 2019) & (poverty_df['tahun'] <= 2022)]
-    return poverty_df
-
-# Load data jumlah kemiskinan
-poverty_df = get_poverty_data()
-
-
-# Filter tahun
-from_year, to_year = st.slider(
-    "Select year range:",
-    min_value=2019,
-    max_value=2022,
-    value=(2019, 2022),
+st.write(
+        """
+    # Grafik Jumlah Stunting Pada Tahun 2019-2022
+        Hallo! Selamat Datang
+        """
 )
 
-# Filter data berdasarkan tahun
-filtered_poverty_df = poverty_df[
-    (poverty_df['tahun'] >= from_year) & (poverty_df['tahun'] <= to_year)
-]
+file_path = Path('/workspaces/dataanalytic/data/Stunting.csv')   
+stunting_data = pd.read_csv(file_path)
 
-# Debugging: Tampilkan data
-st.write("Tabel Jumlah Balita Stunting:", filtered_poverty_df)
+stunting_by_year = stunting_data.groupby('tahun')['jumlah_balita_stunting'].sum().reset_index()
 
-# Cek jika data kosong
-if filtered_poverty_df.empty:
-    st.warning("No data available for the selected year range.")
-else:
-    # Pastikan data numerik
-    filtered_poverty_df['tahun'] = pd.to_numeric(filtered_poverty_df['tahun'], errors='coerce')
-    filtered_poverty_df['jumlah_balita_stunting'] = pd.to_numeric(filtered_poverty_df['jumlah_balita_stunting'], errors='coerce')
-    filtered_poverty_df = filtered_poverty_df.dropna(subset=['tahun', 'jumlah_balita_stunting'])
 
-    # Menghitung total jumlah penduduk miskin per tahun
-    total_poverty_per_year = filtered_poverty_df.groupby('tahun')['jumlah_balita_stunting'].sum().reset_index()
 
-    # Grafik batang (Bar Chart)
-    st.write("Grafik Jumlah Data Balita Stunting Pada Tahun 2019-2022")
-    st.bar_chart(
-        total_poverty_per_year.set_index('tahun')['jumlah_balita_stunting']
-    )
+st.write("Berikut adalah data jumlah stunting per tahun:")
+st.dataframe(stunting_by_year)
 
-    with st.expander("Penjelasan"):
-        st.write("Berdasarkan grafik tersebut, dapat disimpulkan bahwa jumlah penduduk miskin di Indonesia cenderung mengalami peningkatan, terutama pada periode tahun 2019 hingga 2021, kemudian menunjukkan penurunan pada tahun 2022.")
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.plot(stunting_by_year["tahun"], stunting_by_year["jumlah_balita_stunting"], marker="o", linestyle="-", color="red", label="Jumlah Stunting")
+
+ax.set_title("Grafik Jumlah Stunting Tiap Tahun", fontsize=14)
+ax.set_xlabel("Tahun", fontsize=12)
+ax.set_ylabel("Jumlah (Orang)", fontsize=12)
+ax.grid(True, linestyle="--", alpha=0.5)
+ax.legend()
+
+st.pyplot(fig)
+
+total_reduction = stunting_by_year["jumlah_balita_stunting"].iloc[0] - stunting_by_year["jumlah_balita_stunting"].iloc[-1]
+max_stunting = stunting_by_year.loc[stunting_by_year['jumlah_balita_stunting'].idxmax()]
+min_stunting = stunting_by_year.loc[stunting_by_year['jumlah_balita_stunting'].idxmin()]
+total_stunting = stunting_by_year["jumlah_balita_stunting"].sum()
+
+st.write(f"**Insight:**")
+st.write(f"- Dari tahun {stunting_by_year['tahun'].min()} hingga {stunting_by_year['tahun'].max()}, terjadi penurunan jumlah balita stunting sebanyak {total_reduction:,} orang.")
+st.write(f"- Jumlah balita stunting terbanyak adalah Tahun **{max_stunting['tahun']}** dengan jumlah **{max_stunting['jumlah_balita_stunting']:,} orang**.")
+st.write(f"- Jumlah balita stunting tersedikit adalah Tahun **{min_stunting['tahun']}** dengan jumlah **{min_stunting['jumlah_balita_stunting']:,} orang**.")
+st.write(f"- Jumlah balita stunting dari 2019 hingga 2022 adalah **{total_stunting:,} orang**.")
 
 st.title("Grafik Jumlah Stunting di Tiap Kota")
 file_path = Path('/workspaces/dataanalytic/data/Stunting.csv') 

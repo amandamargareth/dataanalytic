@@ -41,8 +41,8 @@ with col4 :
 @st.cache_data
 def get_combined_data():
     # Path untuk file data
-    DATA_1 = Path(__file__).parent / 'data/Jumlah_Kemiskinan.csv'
-    DATA_2 = Path(__file__).parent / 'data/Stunting.csv'
+    DATA_1 = Path('/workspaces/dataanalytic/data/Jumlah_Kemiskinan.csv')   
+    DATA_2 = Path('/workspaces/dataanalytic/data/Stunting.csv')   
 
     # Membaca data
     poverty_df = pd.read_csv(DATA_1)
