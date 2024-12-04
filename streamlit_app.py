@@ -37,69 +37,38 @@ with col4 :
     if st.button('NRP Novi'):
         st.write('220534028') 
 
-# Fungsi untuk membaca data jumlah kemiskinan dan stunting
-@st.cache_data
-def get_combined_data():
-    # Path untuk file data
-    DATA_1 = Path('/workspaces/dataanalytic/data/Jumlah_Kemiskinan.csv')   
-    DATA_2 = Path('/workspaces/dataanalytic/data/Stunting.csv')   
+# Global file paths
+DATA_1 = Path('data/Jumlah_Kemiskinan.csv')
+DATA_2 = Path('data/Stunting.csv')
 
-    # Membaca data
-    poverty_df = pd.read_csv(DATA_1)
-    stunting_df = pd.read_csv(DATA_2)
-
-    # Filter data untuk tahun 2019-2022
-    poverty_df = poverty_df[(poverty_df['tahun'] >= 2019) & (poverty_df['tahun'] <= 2022)]
-    stunting_df = stunting_df[(stunting_df['tahun'] >= 2019) & (stunting_df['tahun'] <= 2022)]
-
-    # Menggabungkan data berdasarkan kolom 'tahun'
-    combined_df = pd.merge(poverty_df, stunting_df, on='tahun', how='inner')
-
-    return combined_df
-
+# Check if files exist
 if not DATA_1.exists():
     st.error(f"File {DATA_1} tidak ditemukan. Pastikan file tersedia di direktori yang benar.")
+elif not DATA_2.exists():
+    st.error(f"File {DATA_2} tidak ditemukan. Pastikan file tersedia di direktori yang benar.")
 else:
-    poverty_df = pd.read_csv(DATA_1)
+    # Fungsi untuk membaca data jumlah kemiskinan dan stunting
+    @st.cache_data
+    def get_combined_data():
+        # Membaca data
+        poverty_df = pd.read_csv(DATA_1)
+        stunting_df = pd.read_csv(DATA_2)
 
-# Load combined data
-combined_df = get_combined_data()
+        # Filter data untuk tahun 2019-2022
+        poverty_df = poverty_df[(poverty_df['tahun'] >= 2019) & (poverty_df['tahun'] <= 2022)]
+        stunting_df = stunting_df[(stunting_df['tahun'] >= 2019) & (stunting_df['tahun'] <= 2022)]
 
-# Menjumlahkan jumlah penduduk miskin dan stunting per tahun
-summed_data = combined_df.groupby('tahun')[['jumlah_penduduk_miskin', 'jumlah_balita_stunting']].sum().reset_index()
+        # Menggabungkan data berdasarkan kolom 'tahun'
+        combined_df = pd.merge(poverty_df, stunting_df, on='tahun', how='inner')
 
-# Tampilkan data gabungan (hanya kolom yang diperlukan)
-st.write("Data Gabungan (Jumlah per Tahun):")
-st.dataframe(summed_data)
+        return combined_df
 
-# Plot grafik batang
-st.header("Grafik Jumlah Penduduk Miskin dan Stunting (2019-2022)")
+    # Load combined data
+    combined_df = get_combined_data()
 
-fig, ax = plt.subplots(figsize=(10, 6))
+    # Menjumlahkan jumlah penduduk miskin dan stunting per tahun
+    summed_data = combined_df.groupby('tahun')[['jumlah_penduduk_miskin', 'jumlah_balita_stunting']].sum().reset_index()
 
-# Data untuk plotting
-years = summed_data['tahun']
-poverty_counts = summed_data['jumlah_penduduk_miskin']
-stunting_counts = summed_data['jumlah_balita_stunting']
-
-# Posisi batang untuk grup
-x = range(len(years))
-bar_width = 0.4
-
-# Membuat grafik batang
-ax.bar([pos - bar_width/2 for pos in x], poverty_counts, width=bar_width, label='Penduduk Miskin', color='skyblue')
-ax.bar([pos + bar_width/2 for pos in x], stunting_counts, width=bar_width, label='Penduduk Stunting', color='salmon')
-
-# Menambahkan label dan judul
-ax.set_xlabel('Tahun')
-ax.set_ylabel('Jumlah (dalam ribuan/miliar)')
-ax.set_title('Perbandingan Penduduk Miskin dan Stunting (2019-2022)')
-ax.set_xticks(x)
-ax.set_xticklabels(years)
-ax.legend()
-
-# Tampilkan grafik di Streamlit
-st.pyplot(fig)
-
-text = st.text_area('Saran')
-st.write('Saran : ', text)
+    # Tampilkan data gabungan (hanya kolom yang diperlukan)
+    st.write("Data Gabungan (Jumlah per Tahun):")
+    st.dataframe(summed_data)
