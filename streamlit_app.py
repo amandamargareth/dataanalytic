@@ -41,9 +41,12 @@ with col4 :
 @st.cache_data
 def get_combined_data():
     # Path untuk file data
-    DATA_1 = Path('/dataanalytic/data/Jumlah_Kemiskinan.csv')   
-    DATA_2 = Path('/dataanalytic/data/Stunting.csv')   
-
+    DATA_1 = Path('/workspaces/dataanalytic/data/Jumlah_Kemiskinan.csv')   
+    DATA_2 = Path('/workspaces/dataanalytic/data/Stunting.csv')   
+if not DATA_1.exists():
+    st.error(f"File {DATA_1} tidak ditemukan. Pastikan file tersedia di direktori yang benar.")
+else:
+    poverty_df = pd.read_csv(DATA_1)
     # Membaca data
     poverty_df = pd.read_csv(DATA_1)
     stunting_df = pd.read_csv(DATA_2)

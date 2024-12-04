@@ -8,7 +8,7 @@ st.title("Jumlah Kemiskinan Di Indonesia")
 # Fungsi untuk membaca data jumlah kemiskinan
 @st.cache_data
 def get_poverty_data():
-    DATA_1 = Path('/dataanalytic/data/Jumlah_Kemiskinan.csv')   
+    DATA_1 = Path('/workspaces/dataanalytic/data/Jumlah_Kemiskinan.csv')   
     poverty_df = pd.read_csv(DATA_1)
 
     # Filter data untuk tahun 2019-2022
