@@ -1,151 +1,100 @@
 import streamlit as st
 import pandas as pd
-import math
+import matplotlib.pyplot as plt
 from pathlib import Path
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
+st.title("Analisis Hubungan Antara Kemiskinan dan Stunting di Indonesia")
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+st.markdown("""
+    <div style="text-align: center;">
+        Disusun oleh :
+    </div>
+    """, 
+    unsafe_allow_html=True)
+col1,col2,col3,col4 = st.columns(4)
 
+with col1 :
+    st.header("Annisa")
+    st.image("https://scontent.fbdo9-1.fna.fbcdn.net/v/t39.30808-6/468405109_122190413258168129_1314148763243046065_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=O-4oiEGm_jkQ7kNvgHUvoJT&_nc_zt=23&_nc_ht=scontent.fbdo9-1.fna&_nc_gid=Ay4S3WJLlTlymBkUOjPezj4&oh=00_AYDAsksbR7YOAFzWhVp6vTboT4qtJeXe41HaUj6eJJkGyg&oe=6755CBD7", use_container_width=True)
+    if st.button('NRP Annisa'):
+        st.write('220534024')    
+
+with col2 :
+    st.header("Amanda")
+    st.image("https://scontent.fbdo9-1.fna.fbcdn.net/v/t39.30808-6/468281884_122190412982168129_542957181432111322_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=833d8c&_nc_ohc=SkeBdY_hbbMQ7kNvgH1xlm7&_nc_zt=23&_nc_ht=scontent.fbdo9-1.fna&_nc_gid=Ag11E5JXrrd7QC2x98GGADE&oh=00_AYAdxI8AVK_NTFfQW8Vic5Y790_AWQ6MfhlD3eUlXEi__w&oe=6755F72D", use_container_width=True)
+    if st.button('NRP Amanda'):
+        st.write('220534025') 
+
+with col3 :
+    st.header("Widya")
+    st.image("https://scontent.fbdo9-1.fna.fbcdn.net/v/t39.30808-6/468394564_122190413282168129_2674353143231961010_n.jpg?stp=dst-jpg_s600x600&_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=m_bbxN0rOdgQ7kNvgGQkwDN&_nc_zt=23&_nc_ht=scontent.fbdo9-1.fna&_nc_gid=A7ySlzRUjfMkZtaQxHBjRdu&oh=00_AYDEXtBK-CrLv0lYz07n-erV2cP40mKf3vvsAlja-d-X8A&oe=6755E094", use_container_width=True)
+    if st.button('NRP Widya'):
+        st.write('220534026') 
+
+with col4 :
+    st.header("Noviyanti")
+    st.image("https://scontent.fbdo9-1.fna.fbcdn.net/v/t39.30808-6/468403667_122190413156168129_8872366674385927362_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=833d8c&_nc_ohc=jmWRtoO_ZW8Q7kNvgEdUcka&_nc_zt=23&_nc_ht=scontent.fbdo9-1.fna&_nc_gid=ARYelPnwHcYNs0AvyNWj_zD&oh=00_AYDWXPonKGarlrA4-S7SU_i0E7avNoqb-WYy8jCzD3iEwg&oe=6755E6F5", use_container_width=True)
+    if st.button('NRP Novi'):
+        st.write('220534028') 
+
+# Fungsi untuk membaca data jumlah kemiskinan dan stunting
 @st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+def get_combined_data():
+    # Path untuk file data
+    DATA_1 = Path(__file__).parent / 'data/Jumlah_Kemiskinan.csv'
+    DATA_2 = Path(__file__).parent / 'data/Stunting.csv'
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+    # Membaca data
+    poverty_df = pd.read_csv(DATA_1)
+    stunting_df = pd.read_csv(DATA_2)
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+    # Filter data untuk tahun 2019-2022
+    poverty_df = poverty_df[(poverty_df['tahun'] >= 2019) & (poverty_df['tahun'] <= 2022)]
+    stunting_df = stunting_df[(stunting_df['tahun'] >= 2019) & (stunting_df['tahun'] <= 2022)]
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+    # Menggabungkan data berdasarkan kolom 'tahun'
+    combined_df = pd.merge(poverty_df, stunting_df, on='tahun', how='inner')
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
+    return combined_df
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+# Load combined data
+combined_df = get_combined_data()
 
-    return gdp_df
+# Menjumlahkan jumlah penduduk miskin dan stunting per tahun
+summed_data = combined_df.groupby('tahun')[['jumlah_penduduk_miskin', 'jumlah_balita_stunting']].sum().reset_index()
 
-gdp_df = get_gdp_data()
+# Tampilkan data gabungan (hanya kolom yang diperlukan)
+st.write("Data Gabungan (Jumlah per Tahun):")
+st.dataframe(summed_data)
 
-# -----------------------------------------------------------------------------
-# Draw the actual page
+# Plot grafik batang
+st.header("Grafik Jumlah Penduduk Miskin dan Stunting (2019-2022)")
 
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
+fig, ax = plt.subplots(figsize=(10, 6))
 
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
+# Data untuk plotting
+years = summed_data['tahun']
+poverty_counts = summed_data['jumlah_penduduk_miskin']
+stunting_counts = summed_data['jumlah_balita_stunting']
 
-# Add some spacing
-''
-''
+# Posisi batang untuk grup
+x = range(len(years))
+bar_width = 0.4
 
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
+# Membuat grafik batang
+ax.bar([pos - bar_width/2 for pos in x], poverty_counts, width=bar_width, label='Penduduk Miskin', color='skyblue')
+ax.bar([pos + bar_width/2 for pos in x], stunting_counts, width=bar_width, label='Penduduk Stunting', color='salmon')
 
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
+# Menambahkan label dan judul
+ax.set_xlabel('Tahun')
+ax.set_ylabel('Jumlah (dalam ribuan/miliar)')
+ax.set_title('Perbandingan Penduduk Miskin dan Stunting (2019-2022)')
+ax.set_xticks(x)
+ax.set_xticklabels(years)
+ax.legend()
 
-countries = gdp_df['Country Code'].unique()
+# Tampilkan grafik di Streamlit
+st.pyplot(fig)
 
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+text = st.text_area('Saran')
+st.write('Saran : ', text)
