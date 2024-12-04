@@ -43,10 +43,7 @@ def get_combined_data():
     # Path untuk file data
     DATA_1 = Path('/workspaces/dataanalytic/data/Jumlah_Kemiskinan.csv')   
     DATA_2 = Path('/workspaces/dataanalytic/data/Stunting.csv')   
-if not DATA_1.exists():
-    st.error(f"File {DATA_1} tidak ditemukan. Pastikan file tersedia di direktori yang benar.")
-else:
-    poverty_df = pd.read_csv(DATA_1)
+
     # Membaca data
     poverty_df = pd.read_csv(DATA_1)
     stunting_df = pd.read_csv(DATA_2)
@@ -59,6 +56,11 @@ else:
     combined_df = pd.merge(poverty_df, stunting_df, on='tahun', how='inner')
 
     return combined_df
+
+if not DATA_1.exists():
+    st.error(f"File {DATA_1} tidak ditemukan. Pastikan file tersedia di direktori yang benar.")
+else:
+    poverty_df = pd.read_csv(DATA_1)
 
 # Load combined data
 combined_df = get_combined_data()
